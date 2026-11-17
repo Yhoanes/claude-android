@@ -1,0 +1,20 @@
+#!/system/bin/sh
+RBIN="$(cd "${0%/*}" && pwd)"
+RT="$(cd "$RBIN/.." && pwd)"
+FILES_DIR="$(cd "$RT/.." && pwd)"
+unset LD_LIBRARY_PATH
+unset LD_PRELOAD
+if ! /system/bin/grep -q "atomics" /proc/cpuinfo 2>/dev/null; then
+  if [ -f "$RT/lib/liblse_compat.so" ]; then
+    export LD_PRELOAD="$RT/lib/liblse_compat.so"
+  fi
+fi
+export HOME="${HOME:-$FILES_DIR}"
+export PREFIX="${PREFIX:-$FILES_DIR/usr}"
+export TMPDIR="${TMPDIR:-$PREFIX/tmp}"
+export CLAUDE_CODE_TMPDIR="${CLAUDE_CODE_TMPDIR:-$PREFIX/tmp}"
+export SSL_CERT_FILE="${SSL_CERT_FILE:-$RT/certs/ca-certificates.crt}"
+export NODE_EXTRA_CA_CERTS="${NODE_EXTRA_CA_CERTS:-$RT/certs/ca-certificates.crt}"
+export BROWSER="${BROWSER:-$RBIN/xdg-open}"
+/system/bin/mkdir -p "$TMPDIR" 2>/dev/null || true
+exec "$RT/lib/ld-linux-aarch64.so.1" --library-path "$RT/lib" "$RT/lib/claude.elf" "$@"

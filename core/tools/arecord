@@ -1,0 +1,5 @@
+#!/system/bin/sh
+# Voice dictation bridge: the official extension records with `arecord`; this streams the
+# Android microphone instead (see runtime/host/cc-arecord.cjs and MicBridge.java).
+RBIN="$(cd "${0%/*}" && pwd)"
+exec "$RBIN/node" "$RBIN/../host/cc-arecord.cjs" "$@"

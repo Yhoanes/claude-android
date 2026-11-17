@@ -1,0 +1,22 @@
+#!/system/bin/sh
+RBIN="$(cd "${0%/*}" && pwd)"
+RT="$(cd "$RBIN/.." && pwd)"
+FILES_DIR="$(cd "$RT/.." && pwd)"
+unset LD_PRELOAD
+export HOME="${HOME:-$FILES_DIR}"
+export PREFIX="${PREFIX:-$FILES_DIR/usr}"
+export TMPDIR="${TMPDIR:-$PREFIX/tmp}"
+export CLAUDE_CODE_TMPDIR="${CLAUDE_CODE_TMPDIR:-$PREFIX/tmp}"
+export LD_LIBRARY_PATH="$RT/node-lib:$PREFIX/lib"
+if [ -f "$PREFIX/etc/tls/openssl.cnf" ]; then
+  export OPENSSL_CONF="$PREFIX/etc/tls/openssl.cnf"
+else
+  export OPENSSL_CONF="$RT/certs/openssl.cnf"
+fi
+export SSL_CERT_FILE="${SSL_CERT_FILE:-$RT/certs/ca-certificates.crt}"
+export NODE_EXTRA_CA_CERTS="${NODE_EXTRA_CA_CERTS:-$RT/certs/ca-certificates.crt}"
+export BROWSER="${BROWSER:-$RBIN/xdg-open}"
+export CC_CLAUDE_BIN="$RBIN/claude"
+export CC_PTY_BIN="$RBIN/cc-pty"
+/system/bin/mkdir -p "$TMPDIR" 2>/dev/null || true
+exec "$RBIN/node.elf" "$RT/host/claude-serve.cjs" "$@"

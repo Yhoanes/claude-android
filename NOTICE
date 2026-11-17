@@ -1,0 +1,46 @@
+Claude Code for Android (v2.1.325-r1)
+Copyright (c) 2026 Yhoanes (https://github.com/Yhoanes/claude-android)
+
+========================================================================
+ATTRIBUTION & NON-COMMERCIAL NOTICE (Apache License 2.0, Section 4(d))
+========================================================================
+
+This product and software distribution ("Claude Code for Android") was created,
+engineered, and maintained solely by Yhoanes:
+  https://github.com/Yhoanes/claude-android
+
+Pursuant to Section 4(d) of the Apache License, Version 2.0, any reproduction,
+fork, redistribution, modified build, or derivative work of this repository or
+its compiled APK binaries MUST retain this NOTICE file intact and provide
+clear, prominent attribution to Yhoanes, including a direct link to the
+official repository:
+  https://github.com/Yhoanes/claude-android
+
+Original Engineering & Architecture by Yhoanes (2026):
+  - Standalone ARM64 Android host architecture (com.cc.ide / com.cc.dev,
+    10-byte prefix parity, zero PRoot, zero Electron, zero Termux dependency)
+    running Anthropic's official Claude Code v2.1.325 Full-Editor UI and native
+    ARM64 claude.elf engine directly on Android silicon.
+  - Capability-hardened security stack: per-boot 256-bit loopback host tokens
+    (HttpOnly SameSite=Strict cookies + DNS-rebinding & CSRF guards), Android
+    Keystore AES-256-GCM API key encryption (SecretStore), randomized native
+    WebView bindings, and sensitive app-data filesystem confinement.
+  - On-demand native AudioRecord voice dictation bridge (MicBridge + cc-arecord)
+    with UID & per-boot token authentication, docked persistent xterm.js PTY
+    terminal (opencode-pty + Bionic bash), and Android SAF project picker.
+  - 1-Tap Native Android ARM64 MCP Plugins & Official Skills Hub syncing directly
+    into ~/.claude/.claude.json and ~/.claude/{skills,rules} for 10 native ARM64
+    MCP suites (Craft Anything + Ghidra 12.1.4, AGY Video Gen, AGY Video Studio,
+    Game Studio 2D/3D, Unity Studio Android, GitHub MCP, AGY ADB Bridge,
+    Chrome DevTools MCP, Android CLI, and Science Suite).
+  - Native ARM64 Rust multicall userspace (cc-box: parallel pkg manager,
+    cc-daemon scheduler, cc-fix-paths, cc-notify), Gradle-free deterministic
+    11-phase APK build pipeline, and SHA-256 certificate-pinned GitHub Releases
+    OTA updater.
+
+All source code, architecture, documentation, visual assets, and compiled APK
+distributions authored by Yhoanes are licensed strictly under the
+Non-Commercial & Mandatory Attribution terms set forth in the LICENSE file.
+Commercial sale, paid redistribution, commercial bundling, or removal of
+author attribution is strictly prohibited without prior written permission
+from Yhoanes.
