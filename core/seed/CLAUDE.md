@@ -1,8 +1,8 @@
 # Claude Code Android Agent Rules & Environment Guidelines
 
 > [!NOTE]
-> This instruction file (`CLAUDE.md`) is automatically loaded in Claude Code for Android (`v2.1.325`).
-> It defines the native Android ARM64 operating environment, package management, and the optional Shizuku shell tools.
+> This instruction file (`CLAUDE.md`) is automatically loaded in Claude Code for Android (`v2.1.331`).
+> It defines the native Android ARM64 operating environment, package management, and optional ADB/Shizuku plugin tools.
 
 ---
 
@@ -17,7 +17,7 @@
   - Runtime Internals: `/data/user/0/com.cc.ide/files/runtime/bin`
   - External / Shared Storage: `/storage/emulated/0` (Default workspace: `/storage/emulated/0/Documents/ClaudeCode`)
   - Claude State & Skills: `/data/user/0/com.cc.ide/files/.claude/` (`settings.json`, `skills/`, `rules/`, `plugins-hub/`)
-  - Global MCP Registry: `/data/user/0/com.cc.ide/files/.claude.json`
+  - Global Config & MCP Registry: `/data/user/0/com.cc.ide/files/.claude/.claude.json`
 
 ---
 
@@ -57,12 +57,10 @@ cc-fix-paths
 
 ---
 
-## 4. Elevated Android Operations via Shizuku (`rish`)
+## 4. Elevated Android Operations (`AGY ADB Bridge` / `rish`)
 
-Shizuku is **off by default**. `rish` only exists on the PATH after the user turns on
-**Settings → System → Shizuku (rish)** and authorizes Claude Code in the Shizuku app.
-If `command -v rish` finds nothing, do not try to work around it: tell the user it is off
-and where to turn it on. When it is on, run `uid=2000(shell)` commands via `rish`:
+Elevated `uid=2000(shell)` access is **off by default**. `rish` and `agy-adb` only exist on `PATH` after the user installs **AGY ADB Bridge** from **Settings → Plugins** and pairs Wireless Debugging (or authorizes Claude Code in Shizuku).
+If `command -v rish` finds nothing, do not try to work around it: tell the user they can install **AGY ADB Bridge** in **Settings → Plugins**. When active, run `uid=2000(shell)` commands via `rish`:
 
 ```bash
 # Install / inspect APKs:

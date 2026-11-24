@@ -6,15 +6,15 @@
 
   <h1 align="center">Claude Code for Android</h1>
 
-  <p><font color="#7d8590">Standalone <b>Anthropic Claude Code (<code>v2.1.325</code>)</b> Full-Editor agentic IDE &amp; native <b>ARM64 Android</b> APK — created and engineered by <a href="https://github.com/Yhoanes"><b>Yhoanes</b></a> (zero PRoot, zero Electron, zero Termux dependency, zero Gradle).</font></p>
+  <p><font color="#7d8590">Standalone <b>Anthropic Claude Code (<code>v2.1.331</code>)</b> Full-Editor agentic IDE &amp; native <b>ARM64 Android</b> APK — created and engineered by <a href="https://github.com/Yhoanes"><b>Yhoanes</b></a> (zero PRoot, zero Electron, zero Termux dependency, zero Gradle).</font></p>
 
   <p>
-    <code>v2.1.325-r1</code> &nbsp;&bull;&nbsp;
+    <code>v2.1.331-r1</code> &nbsp;&bull;&nbsp;
     <code>Android 9.0+ (API 28+)</code> &nbsp;&bull;&nbsp;
     <code>Official Full-Editor UI</code> &nbsp;&bull;&nbsp;
     <code>Direct Kernel execve() ARM64</code> &nbsp;&bull;&nbsp;
     <code>Keystore AES-256-GCM</code> &nbsp;&bull;&nbsp;
-    <code>1-Tap ARM64 MCP Plugins &amp; Skills</code> &nbsp;&bull;&nbsp;
+    <code>15 Native ARM64 MCP Plugins</code> &nbsp;&bull;&nbsp;
     <code>Live GitHub OTA</code>
   </p>
 
@@ -30,7 +30,7 @@
 
 ## Architectural Overview
 
-**Claude Code for Android (`v2.1.325-r1`)** brings Anthropic's official **Claude Code Full-Editor UI** (`anthropic.claude-code` `v2.1.325`) and native ARM64 **`claude` CLI engine** directly to Android phones and tablets as a self-contained standalone APK (`com.cc.ide`).
+**Claude Code for Android (`v2.1.331-r1`)** brings Anthropic's official **Claude Code Full-Editor UI** (`anthropic.claude-code` `v2.1.331`) and native ARM64 **`claude` CLI engine** directly to Android phones and tablets as a self-contained standalone APK (`com.cc.ide`).
 
 Unlike slow `proot-distro` containers, emulated Linux VMs, or remote SSH wrappers, **Claude Code for Android** executes natively on mobile ARM64 silicon via direct Linux kernel `execve()`: pairing an isolated ARM64 `claude.elf` + LSE-compatible runtime with a Bionic `Node.js` VS Code Extension Host (`claude-serve.cjs` + `vscode-shim.cjs`), a 10-byte prefix-aligned **Android Bionic Linux userspace** (`/data/user/0/com.cc.ide/files/usr`) powered by **`cc-box`**, hardware-backed **Android Keystore (`AES-256-GCM`)** credential encryption, and a **1-Tap Native ARM64 MCP Plugins &amp; Skills Marketplace**.
 
@@ -42,7 +42,7 @@ flowchart LR
     UI["Android WebView<br/>Official Claude Code Full-Editor UI"]
     HOST["Java Host (com.cc.ide)<br/>Keystore + MicBridge + SAF + OTA"]
     SHIM["Bionic Node Host (127.0.0.1:45177)<br/>claude-serve.cjs + vscode-shim.cjs"]
-    CORE["Native ARM64 Engine<br/>claude.elf v2.1.325 + Dynamic DNS"]
+    CORE["Native ARM64 Engine<br/>claude.elf v2.1.331 + Dynamic DNS"]
     USR["Bionic Linux Userspace (usr/)<br/>cc-box, pkg, bash, rg, git,pty"]
     MCP["1-Tap ARM64 MCP Suite<br/>Craft Anything, Video, Game, ADB, GitHub"]
 
@@ -61,7 +61,7 @@ flowchart LR
 
 | Subsystem | Technical Implementation |
 | :--- | :--- |
-| **100% Authentic Claude Code Full-Editor UI** | Runs Anthropic's unmodified `v2.1.325` `extension.js` and Full-Editor webview (`IS_FULL_EDITOR = true`) with warm Claude Dark (`#141413` / `#D97757`) &amp; Light (`#FAF9F5`) theming, thinking blocks, interactive tool permissions, plan/auto modes, rich file diffs, session file tracking, bookmarks, and slash commands. |
+| **100% Authentic Claude Code Full-Editor UI** | Runs Anthropic's unmodified `v2.1.331` `extension.js` and Full-Editor webview (`IS_FULL_EDITOR = true`) with warm Claude Dark (`#141413` / `#D97757`) &amp; Light (`#FAF9F5`) theming, thinking blocks, interactive tool permissions, plan/auto modes, rich file diffs, session file tracking, bookmarks, and slash commands. |
 | **Official OAuth + Keystore-Encrypted API Keys** | Sign in seamlessly with your **Claude.ai Subscription** (Pro / Max / Team / Enterprise via Chrome Custom Tabs OAuth), **Anthropic Console**, or any compatible `ANTHROPIC_API_KEY` / `ANTHROPIC_BASE_URL` encrypted at rest with **`AndroidKeyStore` AES-256-GCM** (`SecretStore` — never written in plaintext to disk). |
 | **Capability-Hardened Local Security** | Non-exported internal activities, per-boot 256-bit loopback `CC_HOST_TOKEN` (`HttpOnly; SameSite=Strict` cookie + `Host`/`Origin` DNS-rebinding &amp; CSRF verification), randomized WebView native bridge bindings, and strict path confinement protecting credentials and WebView databases. |
 | **Multi-Project Sidebar &amp; Docked PTY Terminal** | Clean responsive workspace sidebar (`Projects` via Android SAF folder picker, per-folder sessions, rename/delete, instant session switching), active session modified-files viewer, and a persistent per-project docked **`xterm.js` PTY terminal** (`opencode-pty` + Bionic `bash`) with mobile modifier keys (`Esc`, `Tab`, `Ctrl+C`, arrows, `Paste`). |
@@ -94,11 +94,14 @@ Install, toggle, or remove compiled **Android ARM64 Rust MCP servers** from **Se
 
 | Native ARM64 Plugin | Version | Capabilities on Android |
 | :--- | :---: | :--- |
-| **Craft Anything + Ghidra** | `v0.5.0` | **335 native Rust MCP tools** (`<50 MB` RAM) for ELF/PE/Mach-O, APK/DEX, `.NET`/NativeAOT, WASM, ESP32/UF2, Godot `.pck`, Unity IL2CPP &amp; GameCube/Wii `.dol` + on-demand native ARM64 **Ghidra 12.1.4** (`craft-ghidra-setup`). |
-| **AGY Video Gen** | `v1.0.0` | Native Rust AI video generation engine (Text-to-Video, consistent Image-to-Video, First-Last Frame bridging, scene extension, and Lip-Sync) + GPU super-resolution. |
-| **AGY Video Studio** | `v4.0.0` | Pro 60 FPS Motion Design &amp; universal video studio with `h264_mediacodec` GPU encoding, multi-track `V2` B-Roll, PiP/Split-Screen, Karaoke captions, and `-14 LUFS` audio mastering. |
-| **Game Studio 2D/3D** | `v2.0.0` | 16 native Rust MCP tools + ARM64 `GDExtension` (`C++`/`Rust`) compiler + 100% local offline signed `.apk` builder and 120–144 FPS Vulkan profiler for **Godot 4**. |
+| **Craft Anything + Ghidra** | `v0.5.0` | **335 native Rust MCP tools** (`<50 MB` RAM) for ELF/PE/Mach-O, APK/DEX, `.NET`/NativeAOT, WASM, CUDA/PTX, ESP32/UF2/DTB, Godot `.pck`, Unity IL2CPP &amp; GameCube/Wii `.dol` + on-demand native ARM64 **Ghidra 12.1.4** (`craft-ghidra-setup`). |
+| **AGY Video Studio 3D** | `v3.0.2` | **18 native Rust MCP tools** + **Blender 5.0.0 Headless** (`Cycles` + `OpenImageDenoise`), `blender-3d-director` procedural 3D filmmaking, 48kHz audio/SFX synthesis, `h264_mediacodec` GPU encoding &amp; CapCut export. |
+| **PeakCut Pro: Live &amp; AI Clipper** | `v1.0.0` | **12 native Rust MCP tools** for hot live-stream clipping (YouTube, Twitch, Kick while broadcasting) &amp; VODs into `9:16` Shorts/TikToks with active face tracking (`auto_face`), bouncy karaoke captions &amp; offline `sherpa-onnx` ASR. |
+| **Remotion Studio Android** | `v1.0.1` | **10 native Rust MCP tools** + ported **Remotion 4.0** engine (`musl` Rust compositor + Headless Chromium + `h264_mediacodec` GPU) to program and render 60 FPS React/TypeScript videos. |
+| **CLI-Anything Studio &amp; Hub** | `v1.0.0` | **10 native Rust MCP tools** + `cli-hub v0.4.1`: discover &amp; install **103+ agent-native CLIs** in `<3s` with ARM64 compatibility tiers, Capability Matrices, and PEP 420 harness scaffolding. |
+| **Game Studio 2D/3D** | `v2.0.0` | 16 native Rust MCP tools + ARM64 `GDExtension` (`C++`/`Rust`) compiler + 100% local offline signed `.apk` builder and 120–144 FPS Vulkan profiler for **Godot 4.7**. |
 | **Unity Studio Android** | `v1.0.0` | 13 native Rust MCP tools + ported **Unity CLI `v1.0.0`** for Unity 6.3 LTS URP 2D/3D scaffolding, deterministic `.meta`/YAML auditing, `$0` GameCI builds, and live debugging. |
+| **ARTEX Security Suite (3 Plugins)** | `v1.0.0` | **24 native Rust MCP tools** across **ARTEX Audit** (Dual-Graph SQLite WAL + `127.0.0.1:8787` dashboard), **ARTEX Recon** (non-destructive SPA/API/OpenAPI surface mapping), and **ARTEX Defense** (Sigma, Suricata, MITRE ATT&amp;CK v16 &amp; host triage). |
 | **AGY ADB Bridge** | `v1.0.1` | Standalone native Rust wireless ADB 6-digit pairing (`127.0.0.1:5555` offline TCP mode — **no external Shizuku app required**), zero-polling mDNS discovery, and 2s Shizuku `rish` fallback. |
 | **GitHub MCP** | `v2.1.1` | 91 native ARM64 GitHub tools (repositories, PRs, code reviews, Issues, Actions CI/CD logs, security alerts) + native Bionic Git/GH OAuth setup. |
 | **Chrome DevTools MCP** | `v1.10.4` | Headless native ARM64 Chromium automation via Chrome DevTools Protocol (DOM snapshots, network inspection, screenshots, and Core Web Vitals auditing). |
@@ -121,14 +124,14 @@ Install, toggle, or remove compiled **Android ARM64 Rust MCP servers** from **Se
 ## Installation &amp; Building From Source
 
 ### Option A — Install Official Signed Release APK (OTA-Enabled)
-1. Download `ClaudeCode-v2.1.325-r1.apk` from [**GitHub Releases**](https://github.com/Yhoanes/claude-android/releases/latest).
+1. Download `ClaudeCode-v2.1.331-r1.apk` from [**GitHub Releases**](https://github.com/Yhoanes/claude-android/releases/latest).
 2. Install on your Android phone or tablet (future releases update seamlessly in-place via **Settings &rarr; System &rarr; Check for Updates**):
    ```bash
    # Via ADB from PC:
-   adb install -r ClaudeCode-v2.1.325-r1.apk
+   adb install -r ClaudeCode-v2.1.331-r1.apk
 
    # Or on-device via AGY ADB Bridge / Shizuku:
-   rish -c "pm install -r /sdcard/Download/ClaudeCode-v2.1.325-r1.apk"
+   rish -c "pm install -r /sdcard/Download/ClaudeCode-v2.1.331-r1.apk"
    ```
 
 ### Option B — Gradle-Free Deterministic Build Pipeline
@@ -138,10 +141,10 @@ Install, toggle, or remove compiled **Android ARM64 Rust MCP servers** from **Se
 git clone https://github.com/Yhoanes/claude-android.git
 cd claude-android
 
-# Release APK -> dist/ClaudeCode-v2.1.325-r1.apk (package: com.cc.ide, port: 45177)
+# Release APK -> dist/ClaudeCode-v2.1.331-r1.apk (package: com.cc.ide, port: 45177)
 bash build.sh
 
-# Side-by-Side Dev APK -> dist/ClaudeCode-Dev-v2.1.325-r1.apk (package: com.cc.dev, port: 45178)
+# Side-by-Side Dev APK -> dist/ClaudeCode-Dev-v2.1.331-r1.apk (package: com.cc.dev, port: 45178)
 bash build.sh --dev
 ```
 
@@ -171,7 +174,7 @@ claude-android/
 ├── build.sh                # Deterministic 11-phase Gradle-free APK build orchestrator
 ├── build/                  # Modular build phases (00-dev .. 09b-verify) & BuildConfig generator
 ├── config/                 # Centralized app identity (app.env), paths & default Android instructions
-├── core/                   # ARM64 Claude Code v2.1.325 chunks (.part-*), Node VS Code host shim & skills
+├── core/                   # ARM64 Claude Code v2.1.331 chunks (.part-*), Node VS Code host shim & skills
 ├── dist/                   # Output directory for aligned & v2/v3-signed APKs
 ├── docs/assets/            # Application logo & tablet/mobile UI walkthrough screenshots
 ├── env/                    # Bionic Linux bootstrap.tar.gz, native Rust cc-box userspace & pkg

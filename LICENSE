@@ -3,7 +3,7 @@ PART I: OPEN-SOURCE NON-COMMERCIAL & MANDATORY ATTRIBUTION LICENSE (BY-NC)
 ================================================================================
 
 Copyright (c) 2026 Yhoanes (https://github.com/Yhoanes/claude-android)
-All rights reserved over Claude Code for Android (v2.1.325-r1 and subsequent
+All rights reserved over Claude Code for Android (v2.1.331-r1 and subsequent
 releases), including the standalone Android ARM64 host architecture, official
 Claude Code Full-Editor WebView & VS Code host shim integration, Android
 Keystore AES-256-GCM secret vault, native AudioRecord voice dictation bridge,

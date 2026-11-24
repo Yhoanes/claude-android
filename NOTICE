@@ -1,4 +1,4 @@
-Claude Code for Android (v2.1.325-r1)
+Claude Code for Android (v2.1.331-r1)
 Copyright (c) 2026 Yhoanes (https://github.com/Yhoanes/claude-android)
 
 ========================================================================
@@ -19,7 +19,7 @@ official repository:
 Original Engineering & Architecture by Yhoanes (2026):
   - Standalone ARM64 Android host architecture (com.cc.ide / com.cc.dev,
     10-byte prefix parity, zero PRoot, zero Electron, zero Termux dependency)
-    running Anthropic's official Claude Code v2.1.325 Full-Editor UI and native
+    running Anthropic's official Claude Code v2.1.331 Full-Editor UI and native
     ARM64 claude.elf engine directly on Android silicon.
   - Capability-hardened security stack: per-boot 256-bit loopback host tokens
     (HttpOnly SameSite=Strict cookies + DNS-rebinding & CSRF guards), Android
@@ -29,10 +29,11 @@ Original Engineering & Architecture by Yhoanes (2026):
     with UID & per-boot token authentication, docked persistent xterm.js PTY
     terminal (opencode-pty + Bionic bash), and Android SAF project picker.
   - 1-Tap Native Android ARM64 MCP Plugins & Official Skills Hub syncing directly
-    into ~/.claude/.claude.json and ~/.claude/{skills,rules} for 10 native ARM64
-    MCP suites (Craft Anything + Ghidra 12.1.4, AGY Video Gen, AGY Video Studio,
-    Game Studio 2D/3D, Unity Studio Android, GitHub MCP, AGY ADB Bridge,
-    Chrome DevTools MCP, Android CLI, and Science Suite).
+    into ~/.claude/.claude.json and ~/.claude/{skills,rules} for 15 native ARM64
+    MCP suites (Craft Anything + Ghidra 12.1.4, AGY Video Studio 3D, PeakCut Pro,
+    Remotion Studio, CLI-Anything, Game Studio 2D/3D, Unity Studio Android,
+    ARTEX Audit/Recon/Defense, GitHub MCP, AGY ADB Bridge, Chrome DevTools MCP,
+    Android CLI, and Science Suite).
   - Native ARM64 Rust multicall userspace (cc-box: parallel pkg manager,
     cc-daemon scheduler, cc-fix-paths, cc-notify), Gradle-free deterministic
     11-phase APK build pipeline, and SHA-256 certificate-pinned GitHub Releases

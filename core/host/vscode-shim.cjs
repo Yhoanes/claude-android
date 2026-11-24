@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * vscode-shim.cjs — Native Standalone Host Shim for Anthropic Claude Code v2.1.325
+ * vscode-shim.cjs — Native Standalone Host Shim for Anthropic Claude Code v2.1.331
  *
  * Implements the exact `vscode` module surface consumed by `extension.js` so the
  * official Claude Code Full-Editor Agentic UI (`IS_FULL_EDITOR = true`) runs
@@ -273,6 +273,22 @@ function createVSCodeShim(hostOpts) {
       }
       return !posOrRange.isBefore(this.start) && !posOrRange.isAfter(this.end);
     }
+    isEqual(other) {
+      return !!other && this.start.isEqual(other.start) && this.end.isEqual(other.end);
+    }
+    intersection(other) {
+      if (!other) return undefined;
+      const start = this.start.isAfter(other.start) ? this.start : other.start;
+      const end = this.end.isBefore(other.end) ? this.end : other.end;
+      if (start.isAfter(end)) return undefined;
+      return new Range(start, end);
+    }
+    union(other) {
+      if (!other) return this;
+      const start = this.start.isBefore(other.start) ? this.start : other.start;
+      const end = this.end.isAfter(other.end) ? this.end : other.end;
+      return new Range(start, end);
+    }
     with(start, end) {
       return new Range(start || this.start, end || this.end);
     }
@@ -440,12 +456,80 @@ function createVSCodeShim(hostOpts) {
   const StatusBarAlignment = { Left: 1, Right: 2 };
   const ProgressLocation = { SourceControl: 1, Window: 10, Notification: 15 };
   const TextDocumentChangeReason = { Undo: 1, Redo: 2 };
+  const TextDocumentSaveReason = { Manual: 1, AfterDelay: 2, FocusOut: 3 };
+  const TextEditorSelectionChangeKind = { Keyboard: 1, Mouse: 2, Command: 3 };
   const TextEditorRevealType = { Default: 0, InCenter: 1, InCenterIfOutsideViewport: 2, AtTop: 3 };
   const CommentThreadCollapsibleState = { Collapsed: 0, Expanded: 1 };
   const CommentThreadState = { Unresolved: 0, Resolved: 1 };
   const NotebookCellKind = { Markup: 1, Code: 2 };
   const NotebookEditorRevealType = { Default: 0, InCenter: 1, InCenterIfOutsideViewport: 2, AtTop: 3 };
   const DiagnosticSeverity = { Error: 0, Warning: 1, Information: 2, Hint: 3 };
+  const CodeActionTriggerKind = { Invoke: 1, Automatic: 2 };
+
+  class CodeActionKind {
+    constructor(value = "") {
+      this.value = String(value);
+    }
+    append(parts) {
+      const p = String(parts || "");
+      return new CodeActionKind(this.value ? `${this.value}.${p}` : p);
+    }
+    contains(other) {
+      const ov = other ? String(other.value ?? other) : "";
+      return this.value === "" || ov === this.value || ov.startsWith(this.value + ".");
+    }
+    intersects(other) {
+      return this.contains(other) || (other instanceof CodeActionKind && other.contains(this));
+    }
+  }
+  CodeActionKind.Empty = new CodeActionKind("");
+  CodeActionKind.QuickFix = new CodeActionKind("quickfix");
+  CodeActionKind.Refactor = new CodeActionKind("refactor");
+  CodeActionKind.RefactorExtract = new CodeActionKind("refactor.extract");
+  CodeActionKind.RefactorInline = new CodeActionKind("refactor.inline");
+  CodeActionKind.RefactorMove = new CodeActionKind("refactor.move");
+  CodeActionKind.RefactorRewrite = new CodeActionKind("refactor.rewrite");
+  CodeActionKind.Source = new CodeActionKind("source");
+  CodeActionKind.SourceOrganizeImports = new CodeActionKind("source.organizeImports");
+  CodeActionKind.SourceFixAll = new CodeActionKind("source.fixAll");
+
+  class CodeAction {
+    constructor(title, kind) {
+      this.title = String(title || "");
+      this.kind = kind;
+      this.diagnostics = undefined;
+      this.isPreferred = false;
+      this.edit = undefined;
+      this.command = undefined;
+    }
+  }
+
+  class NotebookRange {
+    constructor(start, end) {
+      this.start = Math.max(0, Number(start) || 0);
+      this.end = Math.max(this.start, Number(end) || 0);
+    }
+    get isEmpty() {
+      return this.start === this.end;
+    }
+    with(change = {}) {
+      return new NotebookRange(
+        change.start !== undefined ? change.start : this.start,
+        change.end !== undefined ? change.end : this.end
+      );
+    }
+  }
+
+  class NotebookCellData {
+    constructor(kind, value, languageId) {
+      this.kind = kind;
+      this.value = String(value || "");
+      this.languageId = String(languageId || "plaintext");
+      this.outputs = [];
+      this.metadata = undefined;
+      this.executionSummary = undefined;
+    }
+  }
 
   const NotebookCellOutputItem = {
     error: (err) => ({ mime: "application/vnd.code.notebook.error", data: Buffer.from(JSON.stringify({ name: err?.name || "Error", message: err?.message || String(err), stack: err?.stack || "" })) }),
@@ -1437,6 +1521,12 @@ function createVSCodeShim(hostOpts) {
       }
       return undefined;
     },
+    async showOpenDialog() {
+      return undefined;
+    },
+    async showSaveDialog() {
+      return undefined;
+    },
     async withProgress(_options, task) {
       const progress = { report: () => {} };
       const cts = new CancellationTokenSource();
@@ -1548,6 +1638,7 @@ function createVSCodeShim(hostOpts) {
     registerCodeLensProvider: () => new Disposable(() => {}),
     registerHoverProvider: () => new Disposable(() => {}),
     registerCodeActionsProvider: () => new Disposable(() => {}),
+    match: () => 0,
   };
 
   const comments = {
@@ -1690,6 +1781,8 @@ function createVSCodeShim(hostOpts) {
     StatusBarAlignment,
     ProgressLocation,
     TextDocumentChangeReason,
+    TextDocumentSaveReason,
+    TextEditorSelectionChangeKind,
     TextEditorRevealType,
     CommentThreadCollapsibleState,
     CommentThreadState,
@@ -1697,7 +1790,12 @@ function createVSCodeShim(hostOpts) {
     NotebookEditorRevealType,
     NotebookCellOutputItem,
     NotebookEdit,
+    NotebookRange,
+    NotebookCellData,
     DiagnosticSeverity,
+    CodeActionKind,
+    CodeAction,
+    CodeActionTriggerKind,
     workspace,
     window: windowObj,
     commands,
@@ -1706,6 +1804,7 @@ function createVSCodeShim(hostOpts) {
     comments,
     extensions,
   };
+  vscodeApi.default = vscodeApi;
 
   return {
     vscodeApi,

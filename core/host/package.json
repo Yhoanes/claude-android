@@ -2,7 +2,7 @@
   "name": "claude-code",
   "displayName": "Claude Code for VS Code",
   "description": "Claude Code for VS Code: Harness the power of Claude Code without leaving your IDE",
-  "version": "2.1.325",
+  "version": "2.1.331",
   "publisher": "Anthropic",
   "license": "© Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.",
   "bugs": {
@@ -109,6 +109,12 @@
           "default": false,
           "description": "When enabled, use Ctrl/Cmd+Enter to send prompts instead of just Enter. This allows Enter to create new lines."
         },
+        "claudeCode.escapeStopsClaude": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "description": "Pressing Escape in the Claude panel stops Claude while it works. When off, only the Stop button does. Escape still closes menus and dialogs, and declines permission requests and questions."
+        },
         "claudeCode.preferredLocation": {
           "type": "string",
           "enum": [
@@ -125,7 +131,7 @@
         "claudeCode.lockEditorGroups": {
           "type": "boolean",
           "default": true,
-          "description": "Lock the editor groups Claude starts for its tabs, so files you open while a Claude tab is focused go to another group instead of next to it. When off, Claude never locks an editor group. Groups that are already locked stay locked until you unlock them."
+          "description": "Lock the editor groups Claude starts for its tabs, so files you open while a Claude tab is focused go to another group instead of next to it. When off, Claude never locks an editor group, and VS Code chooses where files you open from a Claude tab go, which can be next to it. Groups that are already locked stay locked until you unlock them."
         },
         "claudeCode.enableNewConversationShortcut": {
           "type": "boolean",
@@ -154,6 +160,12 @@
           "scope": "application",
           "description": "Add the text you select in the editor to your messages, and show it in the message box. When off, you can still add a selection from the editor as an @-mention."
         },
+        "claudeCode.showFixActions": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "description": "Show \"Fix with Claude Code\" where the editor reports something to fix."
+        },
         "claudeCode.continueAfterReload": {
           "type": "boolean",
           "default": true,
@@ -166,11 +178,31 @@
           "scope": "application",
           "description": "Scroll the conversation to the bottom when you send a message. When off, the conversation stays where you left it."
         },
+        "claudeCode.pinPrompt": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "description": "Keep your message pinned at the top of the conversation while you scroll through Claude's reply to it. When off, it scrolls away with the rest of the conversation."
+        },
         "claudeCode.showMessageTimestamps": {
           "type": "boolean",
           "default": true,
           "scope": "application",
           "description": "Show when each message was sent. A date line marks where the day changes."
+        },
+        "claudeCode.contextUsageThreshold": {
+          "type": "number",
+          "default": 50,
+          "minimum": 0,
+          "maximum": 100,
+          "scope": "application",
+          "description": "Show the context usage indicator below the message box once more than this percentage of the context window is used. Set to 0 to show it from the first reply."
+        },
+        "claudeCode.promptSuggestions": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "description": "Show a suggested next prompt in the message box after Claude replies, where suggestions are available. Suggestions add a little to your usage. Applies to new and reopened sessions, not to ones already open."
         },
         "claudeCode.spinnerVerbs": {
           "type": "object",
@@ -348,8 +380,17 @@
         "icon": "$(discard)"
       },
       {
+        "command": "claude-vscode.resolveMergeConflicts",
+        "title": "Claude Code: Resolve Merge Conflicts",
+        "icon": "$(git-merge)"
+      },
+      {
         "command": "claude-vscode.insertAtMention",
         "title": "Claude Code: Insert @-Mention Reference"
+      },
+      {
+        "command": "claude-vscode.addToChat",
+        "title": "Claude Code: Add to Chat"
       },
       {
         "command": "claude-vscode.installPlugin",
@@ -376,12 +417,24 @@
         "title": "Claude Code: Show Logs"
       },
       {
+        "command": "claude-vscode.fixTestFailure",
+        "title": "Fix with Claude Code",
+        "icon": {
+          "light": "resources/claude-logo.svg",
+          "dark": "resources/claude-logo.svg"
+        }
+      },
+      {
         "command": "claude-vscode.toggleFocusView",
         "title": "Claude Code: Toggle Focus view"
       },
       {
         "command": "claude-vscode.openWalkthrough",
         "title": "Claude Code: Open Walkthrough"
+      },
+      {
+        "command": "claude-vscode.addCellToChat",
+        "title": "Claude Code: Add Cell to Chat"
       },
       {
         "command": "claude-vscode.markSessionUnread",
@@ -510,7 +563,7 @@
         {
           "type": "webview",
           "id": "claudeVSCodeSessionsList",
-          "name": "",
+          "name": "Sessions",
           "when": "claude-vscode.sessionsListEnabled"
         }
       ]
@@ -538,7 +591,11 @@
             },
             "completionEvents": [
               "onCommand:claude-vscode.sidebar.open",
-              "onCommand:claude-vscode.editor.open"
+              "onCommand:claude-vscode.editor.open",
+              "onCommand:claude-vscode.editor.openLast",
+              "onCommand:claude-vscode.focus",
+              "onCommand:claude-vscode.terminal.open",
+              "onCommand:claude-vscode.terminal.open.keyboard"
             ]
           },
           {
@@ -552,7 +609,7 @@
           {
             "id": "sessions",
             "title": "Past conversations",
-            "description": "Click the Past Conversations button at the top or type /resume to browse past sessions. You can start a new conversation anytime by clicking the New Chat button.",
+            "description": "Click the Session history button at the top or type /resume to browse past sessions. To start fresh, click the New session button.",
             "media": {
               "markdown": "resources/walkthrough/step4.md"
             }
@@ -585,26 +642,45 @@
           "group": "claudecode@2"
         }
       ],
+      "explorer/context": [
+        {
+          "command": "claude-vscode.addToChat",
+          "when": "!config.claudeCode.useTerminal && !explorerResourceIsRoot && (resourceScheme == file || resourceScheme == vscode-remote)",
+          "group": "5_chat@2"
+        }
+      ],
+      "scm/resourceState/context": [
+        {
+          "command": "claude-vscode.addToChat",
+          "when": "!config.claudeCode.useTerminal && scmProviderRootUri =~ /^(file|vscode-remote):/",
+          "group": "z_chat@2"
+        }
+      ],
       "editor/title": [
         {
+          "command": "claude-vscode.resolveMergeConflicts",
+          "when": "!config.claudeCode.useTerminal && !isInDiffEditor && !isMergeEditor && resource in git.mergeChanges",
+          "group": "navigation@0"
+        },
+        {
           "command": "claude-vscode.acceptProposedDiff",
-          "when": "claude-vscode.viewingProposedDiff",
-          "group": "navigation"
+          "when": "claude-vscode.viewingProposedDiff && resourceScheme == _claude_vscode_fs_right",
+          "group": "navigation@-20"
         },
         {
           "command": "claude-vscode.rejectProposedDiff",
-          "when": "claude-vscode.viewingProposedDiff",
-          "group": "navigation"
+          "when": "claude-vscode.viewingProposedDiff && resourceScheme == _claude_vscode_fs_right",
+          "group": "navigation@-19"
         },
         {
           "command": "claude-code.acceptProposedDiff",
-          "when": "claude-code.viewingProposedDiff",
-          "group": "navigation"
+          "when": "claude-code.viewingProposedDiff && resourceScheme == _claude_fs_right",
+          "group": "navigation@-20"
         },
         {
           "command": "claude-code.rejectProposedDiff",
-          "when": "claude-code.viewingProposedDiff",
-          "group": "navigation"
+          "when": "claude-code.viewingProposedDiff && resourceScheme == _claude_fs_right",
+          "group": "navigation@-19"
         },
         {
           "command": "claude-vscode.editor.openLast",
@@ -615,6 +691,18 @@
           "command": "claude-vscode.terminal.open",
           "when": "config.claudeCode.useTerminal",
           "group": "navigation"
+        }
+      ],
+      "scm/resourceGroup/context": [
+        {
+          "command": "claude-vscode.resolveMergeConflicts",
+          "when": "!config.claudeCode.useTerminal && scmProvider == git && scmResourceGroup == merge",
+          "group": "inline@0"
+        },
+        {
+          "command": "claude-vscode.resolveMergeConflicts",
+          "when": "!config.claudeCode.useTerminal && scmProvider == git && scmResourceGroup == merge",
+          "group": "z_chat@2"
         }
       ],
       "webview/context": [
@@ -631,6 +719,19 @@
           "when": "webviewId == 'claudeVSCodePanel'"
         }
       ],
+      "testing/message/context": [
+        {
+          "command": "claude-vscode.fixTestFailure",
+          "when": "config.claudeCode.showFixActions && !config.claudeCode.useTerminal",
+          "group": "inline@2"
+        }
+      ],
+      "testing/message/content": [
+        {
+          "command": "claude-vscode.fixTestFailure",
+          "when": "config.claudeCode.showFixActions && !config.claudeCode.useTerminal && !testMessage && !testResultOutdated"
+        }
+      ],
       "commandPalette": [
         {
           "command": "claude-vscode.update",
@@ -643,6 +744,26 @@
         {
           "command": "claude-vscode.rejectProposedHunkFromBar",
           "when": "false"
+        },
+        {
+          "command": "claude-vscode.resolveMergeConflicts",
+          "when": "false"
+        },
+        {
+          "command": "claude-vscode.acceptProposedDiff",
+          "when": "claude-vscode.viewingProposedDiff && resourceScheme == _claude_vscode_fs_right"
+        },
+        {
+          "command": "claude-vscode.rejectProposedDiff",
+          "when": "claude-vscode.viewingProposedDiff && resourceScheme == _claude_vscode_fs_right"
+        },
+        {
+          "command": "claude-code.acceptProposedDiff",
+          "when": "claude-code.viewingProposedDiff && resourceScheme == _claude_fs_right"
+        },
+        {
+          "command": "claude-code.rejectProposedDiff",
+          "when": "claude-code.viewingProposedDiff && resourceScheme == _claude_fs_right"
         },
         {
           "command": "claude-vscode.markSessionUnread",
@@ -669,11 +790,19 @@
           "when": "false"
         },
         {
+          "command": "claude-vscode.addCellToChat",
+          "when": "!config.claudeCode.useTerminal && activeEditor == 'workbench.editor.notebook'"
+        },
+        {
           "command": "claude-vscode.focusLastMessage",
           "when": "!config.claudeCode.useTerminal"
         },
         {
           "command": "claude-vscode.newConversation",
+          "when": "false"
+        },
+        {
+          "command": "claude-vscode.fixTestFailure",
           "when": "false"
         },
         {
@@ -685,8 +814,19 @@
           "when": "!config.claudeCode.useTerminal"
         },
         {
+          "command": "claude-vscode.addToChat",
+          "when": "false"
+        },
+        {
           "command": "claude-vscode.installPlugin",
           "when": "claude-vscode.updateSupported"
+        }
+      ],
+      "notebook/cell/title": [
+        {
+          "command": "claude-vscode.addCellToChat",
+          "when": "!config.claudeCode.useTerminal",
+          "group": "0_chat@1"
         }
       ]
     }

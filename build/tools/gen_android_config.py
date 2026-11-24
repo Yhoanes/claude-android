@@ -45,7 +45,7 @@ def main(argv):
     pkg = env.get("PKG", "com.cc.ide")
     port = env.get("PORT", "45177")
     port_dev = env.get("PORT_DEV", "45178")
-    core_version = env.get("CORE_VERSION", "2.1.325")
+    core_version = env.get("CORE_VERSION", "2.1.331")
     oauth_scheme = env.get("OAUTH_SCHEME", "claudecode")
     app_name = env.get("APP_NAME", "Claude Code")
     min_api = env.get("MIN_API", "28")

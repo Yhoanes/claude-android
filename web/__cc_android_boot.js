@@ -2680,7 +2680,7 @@
   function renderSystemPane(el) {
     var b = getBridge();
     var curTheme = (b && typeof b.getTheme === "function") ? b.getTheme() : INITIAL_THEME;
-    var appVer = (b && typeof b.getAppVersion === "function") ? b.getAppVersion() : "2.1.325-r1";
+    var appVer = (b && typeof b.getAppVersion === "function") ? b.getAppVersion() : "2.1.331-r1";
 
     var themeCard = document.createElement("div");
     themeCard.className = "cc-card";

@@ -561,6 +561,8 @@ const GENERAL_SETTING_KEYS = [
   "claudeCode.initialPermissionMode",
   "claudeCode.allowDangerouslySkipPermissions",
   "claudeCode.focusView",
+  "claudeCode.promptSuggestions",
+  "claudeCode.pinPrompt",
   "claudeCode.useCtrlEnterToSend",
   "claudeCode.showMessageTimestamps",
   "claudeCode.scrollToBottomOnSend",
@@ -2075,7 +2077,7 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, {
         ok: true,
         name: "claude-code-android",
-        version: "2.1.325",
+        version: "2.1.331",
         workspace: activeWsPath,
         workspacePtyAlive: Boolean(wsPty && wsPty.alive),
         panelCount: shim.getPanels().size,

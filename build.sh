@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# build.sh - Claude Code for Android (v2.1.325-r1) Gradle-free APK build orchestrator.
+# build.sh - Claude Code for Android (v2.1.331-r1) Gradle-free APK build orchestrator.
 #
 # Pipeline:
 #   00-dev          -> generate BuildConfig.java + res/values/gen.xml + manifest version sync
-#   01-stage-core   -> stage & verify core/claude-core.tar.gz (Claude v2.1.325 + glibc + Node)
+#   01-stage-core   -> stage & verify core/claude-core.tar.gz (Claude v2.1.331 + glibc + Node)
 #   04-runtime      -> assemble assets/runtime/{bin,certs,seed,host,bundled-skills}
 #   04c-rt-manifest -> compute SHA-256 integrity manifest (assets/runtime/manifest.json)
 #   05-web-bus      -> stage assets/web (__cc_android_boot.js, MCP catalog, claude-icon.png)
