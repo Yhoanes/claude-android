@@ -136,24 +136,41 @@ function writeHiddenWorkspaces(setObj) {
   } catch (_) {}
 }
 
-function resolveInitialWorkspace() {
+function hasActiveCredentialsAtBoot() {
+  if (secretApiKey) return true;
+  if (fs.existsSync(path.join(CLAUDE_DIR, ".credentials.json"))) return true;
   try {
-    if (fs.existsSync(WORKSPACE_STATE_FILE)) {
-      const saved = JSON.parse(fs.readFileSync(WORKSPACE_STATE_FILE, "utf8"));
-      if (saved && saved.workspace) {
-        const cand = canonicalizeAndroidPath(saved.workspace);
-        if (cand && fs.existsSync(cand)) return cand;
-      }
+    const settingsPath = path.join(CLAUDE_DIR, "settings.json");
+    if (fs.existsSync(settingsPath)) {
+      const cfg = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
+      if (cfg?.env?.ANTHROPIC_API_KEY || cfg?.env?.ANTHROPIC_AUTH_TOKEN) return true;
     }
   } catch (_) {}
-  if (args.workspace && fs.existsSync(args.workspace)) return canonicalizeAndroidPath(args.workspace);
-  const sdcardDefault = "/storage/emulated/0/Documents/ClaudeCode";
+  return false;
+}
+
+function resolveInitialWorkspace() {
+  if (hasActiveCredentialsAtBoot()) {
+    try {
+      if (fs.existsSync(WORKSPACE_STATE_FILE)) {
+        const saved = JSON.parse(fs.readFileSync(WORKSPACE_STATE_FILE, "utf8"));
+        if (saved && saved.workspace) {
+          const cand = canonicalizeAndroidPath(saved.workspace);
+          if (cand && fs.existsSync(cand)) return cand;
+        }
+      }
+    } catch (_) {}
+    if (args.workspace && fs.existsSync(args.workspace)) return canonicalizeAndroidPath(args.workspace);
+  }
+  const sdcardDefault = APP_DEFAULT_WORKSPACE;
   try {
     fs.mkdirSync(sdcardDefault, { recursive: true });
+    ensureWorkspaceTrustedInClaudeJson(sdcardDefault);
     return sdcardDefault;
   } catch (_) {}
   const localDefault = path.join(HOME_DIR, "workspace");
   fs.mkdirSync(localDefault, { recursive: true });
+  ensureWorkspaceTrustedInClaudeJson(localDefault);
   return localDefault;
 }
 
@@ -657,6 +674,15 @@ const shim = createVSCodeShim({
     broadcastHostEvent("open_settings", { query: String(query || "") });
   },
   onUserPrompt(payload) {
+    // Never show "Trust this folder in Claude Code?" over the pre-login screen
+    if (
+      payload &&
+      typeof payload.message === "string" &&
+      payload.message.includes("Trust this folder") &&
+      readAuthConfigSummary().activeMode === "none"
+    ) {
+      return Promise.resolve(undefined);
+    }
     return new Promise((resolve) => {
       const promptId = "pr_" + (++promptSeq) + "_" + Date.now().toString(36);
       // Modal questions (trust, quick picks) wait for the user; plain notifications expire.
@@ -809,7 +835,7 @@ function renderPanelHtml(panel, themeHint, initialSessionId) {
             try {
               var pkt = JSON.parse(ev.data);
               if (pkt && pkt.__cc_panel_msg) {
-                window.dispatchEvent(new MessageEvent("message", { data: pkt.message }));
+                window.dispatchEvent(new MessageEvent("message", { data: pkt.message, origin: window.location.origin }));
               } else if (pkt && pkt.__cc_host_event) {
                 window.dispatchEvent(new CustomEvent("cc:host-event", { detail: pkt }));
               }
@@ -1348,6 +1374,12 @@ async function signOutCompletely() {
   shim.updateHostSetting("claudeCode.environmentVariables", envVarsList);
 
   if (extensionActivated) {
+    try {
+      fs.mkdirSync(APP_DEFAULT_WORKSPACE, { recursive: true });
+      shim.setWorkspaceDirectory(APP_DEFAULT_WORKSPACE);
+      saveLastWorkspace(APP_DEFAULT_WORKSPACE);
+      process.chdir(APP_DEFAULT_WORKSPACE);
+    } catch (_) {}
     workspacePanels.clear();
     for (const p of Array.from(shim.getPanels().values())) {
       try { p.dispose(); } catch (_) {}

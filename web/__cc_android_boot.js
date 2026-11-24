@@ -146,6 +146,7 @@
   // Dispatch native extension -> webview events directly into Anthropic's React store (0ms, no reload)
   function dispatchExtensionRequest(reqPayload) {
     window.dispatchEvent(new MessageEvent("message", {
+      origin: window.location.origin,
       data: {
         type: "from-extension",
         message: {

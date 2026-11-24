@@ -9,7 +9,7 @@
   <p><font color="#7d8590">Standalone <b>Anthropic Claude Code (<code>v2.1.331</code>)</b> Full-Editor agentic IDE &amp; native <b>ARM64 Android</b> APK — created and engineered by <a href="https://github.com/Yhoanes"><b>Yhoanes</b></a> (zero PRoot, zero Electron, zero Termux dependency, zero Gradle).</font></p>
 
   <p>
-    <code>v2.1.331-r1</code> &nbsp;&bull;&nbsp;
+    <code>v2.1.331-r2</code> &nbsp;&bull;&nbsp;
     <code>Android 9.0+ (API 28+)</code> &nbsp;&bull;&nbsp;
     <code>Official Full-Editor UI</code> &nbsp;&bull;&nbsp;
     <code>Direct Kernel execve() ARM64</code> &nbsp;&bull;&nbsp;
@@ -30,7 +30,7 @@
 
 ## Architectural Overview
 
-**Claude Code for Android (`v2.1.331-r1`)** brings Anthropic's official **Claude Code Full-Editor UI** (`anthropic.claude-code` `v2.1.331`) and native ARM64 **`claude` CLI engine** directly to Android phones and tablets as a self-contained standalone APK (`com.cc.ide`).
+**Claude Code for Android (`v2.1.331-r2`)** brings Anthropic's official **Claude Code Full-Editor UI** (`anthropic.claude-code` `v2.1.331`) and native ARM64 **`claude` CLI engine** directly to Android phones and tablets as a self-contained standalone APK (`com.cc.ide`).
 
 Unlike slow `proot-distro` containers, emulated Linux VMs, or remote SSH wrappers, **Claude Code for Android** executes natively on mobile ARM64 silicon via direct Linux kernel `execve()`: pairing an isolated ARM64 `claude.elf` + LSE-compatible runtime with a Bionic `Node.js` VS Code Extension Host (`claude-serve.cjs` + `vscode-shim.cjs`), a 10-byte prefix-aligned **Android Bionic Linux userspace** (`/data/user/0/com.cc.ide/files/usr`) powered by **`cc-box`**, hardware-backed **Android Keystore (`AES-256-GCM`)** credential encryption, and a **1-Tap Native ARM64 MCP Plugins &amp; Skills Marketplace**.
 
@@ -124,14 +124,14 @@ Install, toggle, or remove compiled **Android ARM64 Rust MCP servers** from **Se
 ## Installation &amp; Building From Source
 
 ### Option A — Install Official Signed Release APK (OTA-Enabled)
-1. Download `ClaudeCode-v2.1.331-r1.apk` from [**GitHub Releases**](https://github.com/Yhoanes/claude-android/releases/latest).
+1. Download `ClaudeCode-v2.1.331-r2.apk` from [**GitHub Releases**](https://github.com/Yhoanes/claude-android/releases/latest).
 2. Install on your Android phone or tablet (future releases update seamlessly in-place via **Settings &rarr; System &rarr; Check for Updates**):
    ```bash
    # Via ADB from PC:
-   adb install -r ClaudeCode-v2.1.331-r1.apk
+   adb install -r ClaudeCode-v2.1.331-r2.apk
 
    # Or on-device via AGY ADB Bridge / Shizuku:
-   rish -c "pm install -r /sdcard/Download/ClaudeCode-v2.1.331-r1.apk"
+   rish -c "pm install -r /sdcard/Download/ClaudeCode-v2.1.331-r2.apk"
    ```
 
 ### Option B — Gradle-Free Deterministic Build Pipeline
@@ -141,10 +141,10 @@ Install, toggle, or remove compiled **Android ARM64 Rust MCP servers** from **Se
 git clone https://github.com/Yhoanes/claude-android.git
 cd claude-android
 
-# Release APK -> dist/ClaudeCode-v2.1.331-r1.apk (package: com.cc.ide, port: 45177)
+# Release APK -> dist/ClaudeCode-v2.1.331-r2.apk (package: com.cc.ide, port: 45177)
 bash build.sh
 
-# Side-by-Side Dev APK -> dist/ClaudeCode-Dev-v2.1.331-r1.apk (package: com.cc.dev, port: 45178)
+# Side-by-Side Dev APK -> dist/ClaudeCode-Dev-v2.1.331-r2.apk (package: com.cc.dev, port: 45178)
 bash build.sh --dev
 ```
 
